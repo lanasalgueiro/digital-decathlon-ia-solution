@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resultado do seu kit — Fitness (protótipo)</title>
+  <style>
+    :root {
+      --decathlon-blue: #2d3291;
+      --decathlon-blue-hover: #23286f;
+      --text: #1a1a1a;
+      --muted: #5c5c5c;
+      --border: #e5e5e5;
+      --bg: #f7f7f8;
+      --card-bg: #fff;
+      font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+      line-height: 1.45;
+      color: var(--text);
+      background: var(--bg);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    .topbar {
+      background: var(--decathlon-blue);
+      color: #fff;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .topbar strong { font-weight: 700; letter-spacing: 0.02em; }
+    .topbar .sources {
+      opacity: 0.92;
+      font-size: 0.78rem;
+    }
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.65rem 1.25rem;
+    }
+    .topbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+      flex-wrap: wrap;
+    }
+    .topbar-nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      opacity: 0.88;
+    }
+    .topbar-nav a:hover {
+      background: rgba(255, 255, 255, 0.12);
+      opacity: 1;
+    }
+    .topbar-nav a[aria-current="page"] {
+      background: rgba(255, 255, 255, 0.22);
+      opacity: 1;
+    }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 1.25rem; }
+    .page-title {
+      text-align: center;
+      margin: 1.25rem 0 0.35rem;
+      font-size: 1.65rem;
+      font-weight: 700;
+    }
+    .page-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 36rem;
+      margin: 0 auto 1rem;
+    }
+    .edit-link {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .edit-link button {
+      background: none;
+      border: none;
+      color: var(--decathlon-blue);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .banner-rec {
+      background: #ececf3;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: #333;
+    }
+    .banner-rec .ico {
+      flex-shrink: 0;
+      width: 2.25rem;
+      height: 2.25rem;
+      background: var(--decathlon-blue);
+      color: #fff;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+    details.qblock {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+    details.qblock summary { cursor: pointer; font-weight: 600; color: var(--decathlon-blue); }
+    fieldset {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin: 0 0 0.65rem;
+      padding: 0.65rem 0.85rem;
+      background: #fafafa;
+    }
+    legend { font-size: 0.82rem; font-weight: 600; }
+    label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.2rem; }
+    select {
+      width: 100%;
+      padding: 0.45rem 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .btn-primary {
+      display: inline-block;
+      width: 100%;
+      max-width: 280px;
+      margin: 0.5rem auto 0;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      background: var(--decathlon-blue);
+      color: #fff;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-primary:hover { background: var(--decathlon-blue-hover); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .center-actions { text-align: center; margin-bottom: 1.25rem; }
+    .hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      line-height: 1.4;
+    }
+    .hint code { background: #eee; padding: 0.1rem 0.35rem; border-radius: 4px; }
+    .file-fallback { margin-top: 0.75rem; font-size: 0.8rem; }
+    .file-fallback input { margin-top: 0.25rem; }
+
+    /* Hero + sidebar */
+    .kit-top {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.25rem;
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .kit-top { grid-template-columns: 1fr; }
+    }
+    .main-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .main-inner {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 1rem;
+      padding: 1rem;
+    }
+    @media (max-width: 640px) {
+      .main-inner { grid-template-columns: 1fr; }
+    }
+    .main-visual {
+      border-radius: 10px;
+      background: linear-gradient(145deg, #e8eaf6 0%, #f5f5f5 50%, #dce3f7 100%);
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .main-visual .main-hero-img {
+      max-width: 100%;
+      max-height: 200px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: none;
+    }
+    .main-visual.has-image .main-visual-ph {
+      display: none;
+    }
+    .main-visual.has-image .main-hero-img {
+      display: block;
+    }
+    .main-visual .ph-ico {
+      font-size: 2.5rem;
+      opacity: 0.35;
+      margin-bottom: 0.35rem;
+    }
+    .main-visual .ph-id {
+      font-size: 0.75rem;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    .thumbs {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+      justify-content: center;
+    }
+    .thumbs .thumb-slot {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      background: #ddd center/cover no-repeat;
+      border: 1px solid #ccc;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+    .main-visual.has-image .thumbs .thumb-slot.thumb-filled {
+      opacity: 1;
+    }
+    .main-info h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.15rem;
+      line-height: 1.25;
+    }
+    .main-info .brand { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .stars { font-size: 0.85rem; color: #b8860b; margin-bottom: 0.5rem; }
+    .desc { font-size: 0.88rem; color: #444; margin-bottom: 0.75rem; }
+    .score-pill {
+      display: inline-block;
+      background: #eef0fb;
+      color: var(--decathlon-blue);
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      margin-bottom: 0.65rem;
+    }
+    .swap-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    .btn-outline {
+      border: 1px solid var(--decathlon-blue);
+      color: var(--decathlon-blue);
+      background: #fff;
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    @media (max-width: 520px) {
+      .features { grid-template-columns: 1fr; }
+    }
+    .features div {
+      padding: 0.5rem;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .kit-sidebar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      position: sticky;
+      top: 0.5rem;
+    }
+    .kit-sidebar h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .kit-sidebar .total {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--decathlon-blue);
+      margin-bottom: 0.25rem;
+    }
+    .kit-sidebar .total-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem; }
+    .kit-list { list-style: none; margin: 0 0 1rem; padding: 0; font-size: 0.82rem; }
+    .kit-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .kit-list li span:first-child { flex: 1; min-width: 0; }
+    .kit-sidebar .cta {
+      width: 100%;
+      padding: 0.85rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      background: var(--decathlon-blue);
+      color: #fff;
+      cursor: pointer;
+      margin-bottom: 0.65rem;
+    }
+    .kit-sidebar .cta:hover { background: var(--decathlon-blue-hover); }
+    .kit-sidebar .fine { font-size: 0.72rem; color: var(--muted); line-height: 1.35; }
+
+    /* Composition grid */
+    .composition h2 { font-size: 1.2rem; margin: 0 0 0.35rem; }
+    .composition .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1rem; }
+    .cta-strip {
+      background: var(--decathlon-blue);
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.9rem;
+    }
+    .cta-strip button {
+      background: #fff;
+      color: var(--decathlon-blue);
+      border: none;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .grid-6 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 900px) {
+      .grid-6 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .grid-6 { grid-template-columns: 1fr; }
+    }
+    .p-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.65rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+    }
+    .p-card .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      margin-bottom: 0.35rem;
+    }
+    .p-card .actions button {
+      font-size: 0.68rem;
+      padding: 0.2rem 0.45rem;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 4px;
+      cursor: not-allowed;
+      color: var(--muted);
+    }
+    .p-card .img {
+      flex: 1;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #f5f5f5, #ebebeb);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      font-size: 1.75rem;
+      opacity: 0.5;
+      position: relative;
+      overflow: hidden;
+    }
+    .p-card .img .card-vtex-img {
+      max-width: 100%;
+      max-height: 140px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: none;
+    }
+    .p-card .img.has-image {
+      opacity: 1;
+    }
+    .p-card .img.has-image .img-ph {
+      display: none;
+    }
+    .p-card .img.has-image .card-vtex-img {
+      display: block;
+    }
+    .p-card .cat {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--decathlon-blue);
+      margin-bottom: 0.25rem;
+    }
+    .p-card .name { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.35rem; line-height: 1.25; }
+    .p-card .stars { font-size: 0.78rem; }
+    .p-card .price { font-weight: 700; margin: 0.35rem 0; font-size: 0.95rem; }
+    .p-card .link {
+      margin-top: auto;
+      text-align: right;
+      font-size: 0.82rem;
+    }
+    .p-card .link a { color: var(--decathlon-blue); font-weight: 600; text-decoration: none; }
+    .p-card .link a:hover { text-decoration: underline; }
+
+    .why {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .why h2 { text-align: center; font-size: 1.1rem; margin-bottom: 1rem; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: #444;
+    }
+    @media (max-width: 700px) {
+      .why-grid { grid-template-columns: 1fr; }
+    }
+    .why-grid div {
+      padding: 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-align: center;
+    }
+    .why-grid .w-ico { font-size: 1.5rem; margin-bottom: 0.35rem; }
+
+    .err { color: #b91c1c; font-size: 0.9rem; }
+    #status { font-size: 0.88rem; margin: 0.5rem 0; color: var(--muted); text-align: center; }
+    .debug-key {
+      font-size: 0.7rem;
+      color: #999;
+      word-break: break-all;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <strong>DECATHLON — Protótipo kit fitness</strong>
+      <nav class="topbar-nav" aria-label="Protótipos de kit">
+        <a href="fitness_test.html" aria-current="page">Fitness</a>
+        <a href="trilhas_test.html">Trilhas</a>
+        <a href="camping_test.html">Camping</a>
+        <a href="corrida_test.html">Corrida</a>
+      </nav>
+    </div>
+    <span class="sources">Fontes: <code>questions_fitness.json</code> + <code>candidates/fitness_kit_candidates.json</code></span>
+  </header>
+
+  <div class="wrap">
+    <h1 class="page-title">Resultado do seu kit</h1>
+    <p class="page-sub">
+      Simulação para teste de produto: 1 item principal e até 6 complementares (score ≥ 0, categorias distintas).
+      Preços da coluna <code>price</code> do CSV entram no score (orçamento + perfil) e aparecem no kit abaixo.
+    </p>
+    <p class="edit-link">
+      <button type="button" id="toggleQs" aria-expanded="false">Editar respostas</button>
+    </p>
+
+    <div class="banner-rec">
+      <div class="ico">DK</div>
+      <div>
+        <strong>Recomendação Decathlon</strong> — seleção orientada pelas suas respostas e pelos candidatos gerados
+        (<code>candidates/fitness_kit_candidates.json</code>).
+      </div>
+    </div>
+
+    <details class="qblock" id="qblock">
+      <summary>Questionário (fitness)</summary>
+      <form id="form"></form>
+      <div class="center-actions">
+        <button type="button" class="btn-primary" id="btn" disabled>Atualizar kit</button>
+      </div>
+      <p class="hint">
+        Carregamento automático dos JSON na mesma pasta deste HTML. Se falhar, use um servidor local:<br />
+        <code>python -m http.server 8080</code> → <code>http://localhost:8080/fitness_test.html</code><br />
+        Imagens: URLs da coluna <code>ImageUrl</code> do <code>products.csv</code>, copiadas para o campo <code>imageUrl</code> de cada candidato ao rodar <code>build_kit_candidates.py</code>. O HTML só usa essas URLs (sem <code>fetch</code> à API VTEX).
+      </p>
+      <div class="file-fallback">
+        <div><label>Perguntas: <input type="file" id="fileQuestions" accept=".json,application/json" /></label></div>
+        <div><label>Candidatos: <input type="file" id="fileKits" accept=".json,application/json" /></label></div>
+      </div>
+    </details>
+
+    <div id="status"></div>
+    <div id="out"></div>
+  </div>
+
+  <script>
+    function norm(s) {
+      return String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
+    }
+
+    function sortQuestions(raw) {
+      return [...raw].sort((a, b) => {
+        const oa = a.order != null && a.order !== "" ? parseInt(String(a.order), 10) : 1e9;
+        const ob = b.order != null && b.order !== "" ? parseInt(String(b.order), 10) : 1e9;
+        const na = Number.isFinite(oa) ? oa : 1e9;
+        const nb = Number.isFinite(ob) ? ob : 1e9;
+        if (na !== nb) return na - nb;
+        return String(a.question_text || "").localeCompare(String(b.question_text || ""));
+      });
+    }
+
+    function parseOptions(optionsJson) {
+      const arr = JSON.parse(optionsJson);
+      return arr.map((o) => {
+        if (typeof o === "string") {
+          const label = o.trim();
+          return { label, context_key: "" };
+        }
+        if (o && typeof o === "object" && o.label != null) {
+          return {
+            label: String(o.label).trim(),
+            context_key: o.context_key != null ? String(o.context_key).trim() : "",
+          };
+        }
+        return { label: String(o).trim(), context_key: "" };
+      });
+    }
+
+    function mapSpace(v) {
+      v = norm(v);
+      if (v.includes("pouco")) return "small";
+      if (v.includes("moderado")) return "medium";
+      if (v.includes("bastante")) return "large";
+      return "unknown";
+    }
+    function mapFreq(v) {
+      v = norm(v);
+      if (v.startsWith("1")) return "1_2";
+      if (v.startsWith("3")) return "3_4";
+      if (v.includes("5")) return "5_plus";
+      return "unknown";
+    }
+    function mapGoal(v) {
+      v = norm(v);
+      if (v.includes("massa")) return "hypertrophy";
+      if (v.includes("emagrecer") || v.includes("condicionamento")) return "weight_loss";
+      if (v.includes("bem-estar") || v.includes("saúde")) return "wellness";
+      if (v.includes("mobilidade") || v.includes("along")) return "mobility";
+      if (v.includes("performance") || v.includes("intenso")) return "performance";
+      return "unknown";
+    }
+    function mapTraining(v) {
+      v = norm(v);
+      if (v.includes("muscula")) return "strength";
+      if (v.includes("hiit") || v.includes("funcional")) return "hiit";
+      if (v.includes("cardio")) return "cardio";
+      if (v.includes("yoga") || v.includes("along")) return "yoga";
+      if (v.includes("tudo")) return "mixed";
+      return "unknown";
+    }
+    function mapBudget(v) {
+      v = norm(v);
+      if (v.includes("essencial") || v.includes("sem gastar")) return "budget";
+      if (v.includes("equilíbrio") || v.includes("equilibrio")) return "balanced";
+      if (v.includes("investir") || v.includes("melhores")) return "premium";
+      return "unknown";
+    }
+    function contextKeyFromAnswers(byQ) {
+      const space = mapSpace(byQ["Quanto espaço você tem disponível para treinar?"] || "");
+      const freq = mapFreq(byQ["Com que frequência você pretende treinar?"] || "");
+      const goal = mapGoal(byQ["Qual seu principal objetivo?"] || "");
+      const training = mapTraining(byQ["Qual tipo de treino você pretende fazer com mais frequência?"] || "");
+      const budget = mapBudget(byQ["Quanto você quer investir para esta aventura?"] || "");
+      return [
+        "sport=fitness",
+        `training=${training}`,
+        `goal=${goal}`,
+        `space=${space}`,
+        `freq=${freq}`,
+        `budget=${budget}`,
+      ].join("|");
+    }
+
+    function formatPrice(item) {
+      if (!item || item.price == null || item.price === "") return "—";
+      const n = typeof item.price === "number" ? item.price : parseFloat(String(item.price).replace(",", "."));
+      if (!Number.isFinite(n)) return "—";
+      return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function decathlonSearchUrl(productId, name) {
+      const q = encodeURIComponent(String(productId || name || ""));
+      return `https://www.decathlon.com.br/search?Ntt=${q}`;
+    }
+
+    function categoryKey(path) {
+      const c = String(path || "").replace(/\s+/g, " ").trim().toLowerCase();
+      return c || "__sem_categoria__";
+    }
+
+    function categoryLeaf(path) {
+      const s = String(path || "").trim();
+      if (!s) return "—";
+      const parts = s.split("|").map((p) => p.trim()).filter(Boolean);
+      return parts.length ? parts[parts.length - 1].toUpperCase() : s.toUpperCase();
+    }
+
+    const KIT_MIN_SCORE = 0;
+    const KIT_ADDON_MAX = 6;
+
+    let kitImageHydrationGen = 0;
+
+    function applyMainKitImage(wrap, url, gen) {
+      const heroImg = wrap.querySelector(".main-hero-img");
+      const slots = wrap.querySelectorAll(".thumb-slot");
+      if (!heroImg || !url || gen !== kitImageHydrationGen) return;
+      heroImg.src = url;
+      wrap.classList.add("has-image");
+      slots.forEach((slot) => {
+        slot.style.backgroundImage = "url(" + JSON.stringify(url) + ")";
+        slot.classList.add("thumb-filled");
+      });
+    }
+
+    function applyCardKitImage(box, url, gen) {
+      if (gen !== kitImageHydrationGen) return;
+      const img = box.querySelector(".card-vtex-img");
+      const card = box.closest(".p-card");
+      const name = card && card.getAttribute("data-product-name");
+      if (!img || !url) return;
+      img.src = url;
+      if (name) img.alt = name;
+      box.classList.add("has-image");
+    }
+
+    /** Aplica só <code>imageUrl</code> do JSON (origem: <code>ImageUrl</code> no CSV). Sem fetch à VTEX. */
+    function hydrateKitImages(root) {
+      if (!root) return;
+      const gen = ++kitImageHydrationGen;
+      root.querySelectorAll(".main-visual[data-vtex-product-id]").forEach((wrap) => {
+        const u = (wrap.getAttribute("data-image-url") || "").trim();
+        if (u) applyMainKitImage(wrap, u, gen);
+      });
+      root.querySelectorAll(".p-card .img[data-vtex-product-id]").forEach((box) => {
+        const u = (box.getAttribute("data-image-url") || "").trim();
+        if (u) applyCardKitImage(box, u, gen);
+      });
+    }
+
+    function scoreOk(item) {
+      return item && typeof item.score === "number" && item.score >= KIT_MIN_SCORE;
+    }
+
+    function addonsDistinctCategories(addons, mainCategory) {
+      const used = new Set();
+      const mk = categoryKey(mainCategory);
+      if (mk) used.add(mk);
+      const out = [];
+      for (const a of addons || []) {
+        if (!scoreOk(a)) continue;
+        const k = categoryKey(a.category);
+        if (used.has(k)) continue;
+        used.add(k);
+        out.push(a);
+        if (out.length >= KIT_ADDON_MAX) break;
+      }
+      return out;
+    }
+
+    let questions = [];
+    let kitIndex = new Map();
+
+    function buildForm() {
+      const form = document.getElementById("form");
+      form.innerHTML = "";
+      for (const q of questions) {
+        const opts = parseOptions(q.options_json);
+        const fs = document.createElement("fieldset");
+        const leg = document.createElement("legend");
+        leg.textContent = q.question_text;
+        fs.appendChild(leg);
+        const lab = document.createElement("label");
+        lab.htmlFor = `q_${q.id || q.question_text}`;
+        lab.textContent = "Resposta";
+        const sel = document.createElement("select");
+        sel.id = `q_${q.id || q.question_text}`;
+        sel.dataset.question = q.question_text;
+        for (const o of opts) {
+          const op = document.createElement("option");
+          op.value = o.label;
+          op.textContent = o.label;
+          if (o.context_key) op.dataset.contextKey = o.context_key;
+          sel.appendChild(op);
+        }
+        fs.appendChild(lab);
+        fs.appendChild(sel);
+        form.appendChild(fs);
+      }
+    }
+
+    function collectAnswers() {
+      const byQ = {};
+      document.querySelectorAll("#form select").forEach((sel) => {
+        byQ[sel.dataset.question] = sel.value;
+      });
+      return byQ;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function vtexPid(obj) {
+      if (!obj) return "";
+      const v = obj.productId != null && obj.productId !== "" ? obj.productId : obj.product_id;
+      return String(v == null ? "" : v).trim();
+    }
+
+    function kitImageUrl(item) {
+      if (!item) return "";
+      const u = item.imageUrl != null && item.imageUrl !== "" ? item.imageUrl : item.image_url;
+      return String(u == null ? "" : u).trim();
+    }
+
+    function shortDesc(name, category, tags) {
+      const t = (tags || []).slice(0, 4).join(" · ");
+      const base = [category, t].filter(Boolean).join(" · ");
+      return escapeHtml((base || name || "").slice(0, 220));
+    }
+
+    function renderKit(ctxEntry, attemptedKey) {
+      const out = document.getElementById("out");
+      const key = ctxEntry ? ctxEntry.context_key || "" : String(attemptedKey || "");
+
+      if (!ctxEntry) {
+        out.innerHTML = `<p class="err" style="text-align:center">Nenhum contexto para esta combinação.</p><p class="debug-key">context_key: ${escapeHtml(key)}</p>`;
+        return;
+      }
+
+      const main = (ctxEntry.main_candidates || []).find(scoreOk) || null;
+      const addons = addonsDistinctCategories(
+        ctxEntry.addon_candidates || [],
+        main ? main.category : ""
+      );
+      const pad = Math.max(0, KIT_ADDON_MAX - addons.length);
+
+      const nItems = (main ? 1 : 0) + addons.length;
+      const priceSum =
+        (main && main.price != null ? Number(main.price) : 0) +
+        addons.reduce((acc, a) => acc + (a.price != null ? Number(a.price) : 0), 0);
+
+      let sidebarRows = "";
+      if (main) {
+        sidebarRows += `<li><span>${escapeHtml(main.name)}</span><span>${formatPrice(main)}</span></li>`;
+      }
+      for (const a of addons) {
+        sidebarRows += `<li><span>${escapeHtml(a.name)}</span><span>${formatPrice(a)}</span></li>`;
+      }
+
+      let mainBlock = "";
+      if (main) {
+        mainBlock = `
+          <div class="main-card">
+            <div class="main-inner">
+              <div class="main-visual" data-vtex-product-id="${escapeHtml(vtexPid(main))}" data-image-url="${escapeHtml(kitImageUrl(main))}">
+                <img class="main-hero-img" alt="${escapeHtml(main.name)}" loading="lazy" width="200" height="200" />
+                <div class="main-visual-ph">
+                  <span class="ph-ico">◇</span>
+                  <div class="ph-id">VTEX ${escapeHtml(vtexPid(main))}</div>
+                </div>
+                <div class="thumbs">
+                  <span class="thumb-slot"></span><span class="thumb-slot"></span><span class="thumb-slot"></span><span class="thumb-slot"></span>
+                </div>
+              </div>
+              <div class="main-info">
+                <h2>${escapeHtml(main.name)}</h2>
+                <div class="brand">${escapeHtml(main.brand || "")} · ${escapeHtml(main.category || "")}</div>
+                <div class="stars">★★★★☆ <span style="color:#888">(protótipo)</span></div>
+                <p class="desc">${shortDesc(main.name, main.category, main.tags)}</p>
+                <div class="score-pill">${formatPrice(main)} · score ${escapeHtml(String(main.score))}</div>
+                <div class="swap-row">
+                  <button type="button" class="btn-outline" disabled title="Protótipo">Trocar principal</button>
+                  <a class="btn-outline" href="${decathlonSearchUrl(vtexPid(main), main.name)}" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block">Buscar na loja</a>
+                </div>
+                <div class="features">
+                  <div><strong>Relevância</strong><br />Ordenação por score do gerador</div>
+                  <div><strong>Categoria</strong><br />Path do CSV</div>
+                  <div><strong>Contexto</strong><br />Respostas do questionário</div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        mainBlock = `<p class="err">Sem principal com score ≥ ${KIT_MIN_SCORE} neste contexto.</p>`;
+      }
+
+      let cards = "";
+      for (const a of addons) {
+        const leaf = categoryLeaf(a.category);
+        cards += `
+          <article class="p-card" data-product-name="${escapeHtml(a.name)}">
+            <div class="actions">
+              <button type="button" disabled>Trocar</button>
+              <button type="button" disabled>Remover</button>
+            </div>
+            <div class="img" data-vtex-product-id="${escapeHtml(vtexPid(a))}" data-image-url="${escapeHtml(kitImageUrl(a))}">
+              <span class="img-ph">◇</span>
+              <img class="card-vtex-img" alt="" loading="lazy" width="160" height="140" />
+            </div>
+            <div class="cat">${escapeHtml(leaf)}</div>
+            <div class="name">${escapeHtml(a.name)}</div>
+            <div class="stars">★★★★☆</div>
+            <div class="price">${formatPrice(a)}</div>
+            <div class="link"><a href="${decathlonSearchUrl(vtexPid(a), a.name)}" target="_blank" rel="noopener">Ver detalhes ›</a></div>
+          </article>`;
+      }
+      for (let i = 0; i < pad; i++) {
+        cards += `
+          <article class="p-card" style="opacity:0.55">
+            <div class="actions"><button type="button" disabled>Trocar</button><button type="button" disabled>Remover</button></div>
+            <div class="img">—</div>
+            <div class="cat">—</div>
+            <div class="name">Vaga — sem candidato (score ≥ ${KIT_MIN_SCORE} / categoria distinta)</div>
+            <div class="stars">—</div>
+            <div class="price">—</div>
+            <div class="link">—</div>
+          </article>`;
+      }
+
+      out.innerHTML = `
+        <div class="debug-key">context_key: ${escapeHtml(key)}</div>
+        <section class="kit-top">
+          <div>${mainBlock}</div>
+          <aside class="kit-sidebar">
+            <h3>SEU KIT</h3>
+            <div class="total">${priceSum > 0 ? priceSum.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}</div>
+            <div class="total-sub">${nItems} itens · preços do CSV (coluna price)</div>
+            <ul class="kit-list">${sidebarRows || '<li><span>—</span><span>—</span></li>'}</ul>
+            <button type="button" class="cta" disabled title="Protótipo">Adicionar kit ao carrinho</button>
+            <p class="fine">Protótipo local: sem checkout. Use os links “Buscar na loja” / “Ver detalhes” para abrir a Decathlon.</p>
+          </aside>
+        </section>
+        <section class="composition">
+          <h2>Composição do kit</h2>
+          <p class="sub">Até 6 complementares, categorias distintas, score ≥ ${KIT_MIN_SCORE}. Botões Trocar/Remover são visuais (desativados).</p>
+          <div class="cta-strip">
+            <span>Em dúvida de como montar o treino?</span>
+            <button type="button" disabled>Acessar conteúdo</button>
+          </div>
+          <div class="grid-6">${cards}</div>
+        </section>
+        <section class="why">
+          <h2>Por que comprar como kit?</h2>
+          <div class="why-grid">
+            <div><div class="w-ico">◎</div><strong>Pronto para treinar</strong><br />Combinação coerente com o perfil respondido.</div>
+            <div><div class="w-ico">✓</div><strong>Curadoria assistida</strong><br />Candidatos gerados a partir do catálogo exportado.</div>
+            <div><div class="w-ico">★</div><strong>Personalizado</strong><br />Contexto derivado das respostas do questionário fitness.</div>
+          </div>
+        </section>`;
+      requestAnimationFrame(() => hydrateKitImages(out));
+    }
+
+    async function loadJson(path) {
+      const r = await fetch(path, { cache: "no-store" });
+      if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+      return r.json();
+    }
+
+    function indexKits(data) {
+      kitIndex = new Map();
+      for (const c of data.contexts || []) {
+        if (c.context_key) kitIndex.set(c.context_key, c);
+      }
+    }
+
+    function refreshKit() {
+      const byQ = collectAnswers();
+      const key = contextKeyFromAnswers(byQ);
+      renderKit(kitIndex.get(key), key);
+    }
+
+    document.getElementById("toggleQs").addEventListener("click", () => {
+      const d = document.getElementById("qblock");
+      d.open = !d.open;
+      document.getElementById("toggleQs").setAttribute("aria-expanded", d.open ? "true" : "false");
+    });
+
+    document.getElementById("btn").addEventListener("click", refreshKit);
+
+    document.getElementById("fileQuestions").addEventListener("change", async (ev) => {
+      const f = ev.target.files[0];
+      if (!f) return;
+      const raw = JSON.parse(await f.text());
+      questions = sortQuestions(raw);
+      buildForm();
+      document.getElementById("btn").disabled = kitIndex.size === 0;
+      document.getElementById("status").textContent =
+        kitIndex.size ? "Perguntas carregadas (arquivo)." : "Carregue também o JSON de candidatos.";
+      refreshKit();
+    });
+
+    document.getElementById("fileKits").addEventListener("change", async (ev) => {
+      const f = ev.target.files[0];
+      if (!f) return;
+      const data = JSON.parse(await f.text());
+      indexKits(data);
+      document.getElementById("btn").disabled = questions.length === 0;
+      document.getElementById("status").textContent =
+        questions.length ? "Candidatos carregados (arquivo)." : "Carregue também as perguntas.";
+      refreshKit();
+    });
+
+    async function tryFetch() {
+      const status = document.getElementById("status");
+      const btn = document.getElementById("btn");
+      status.textContent = "Carregando questions_fitness.json e candidates/fitness_kit_candidates.json…";
+      try {
+        const [qRaw, kRaw] = await Promise.all([
+          loadJson("questions_fitness.json"),
+          loadJson("candidates/fitness_kit_candidates.json"),
+        ]);
+        questions = sortQuestions(qRaw);
+        indexKits(kRaw);
+        buildForm();
+        btn.disabled = false;
+        status.textContent = "Arquivos carregados. Kit atualizado conforme respostas atuais.";
+        refreshKit();
+      } catch (e) {
+        status.innerHTML =
+          '<span class="err">Carregamento automático falhou (use <code>python -m http.server</code> ou os campos de arquivo abaixo).</span>';
+        btn.disabled = true;
+      }
+    }
+
+    tryFetch();
+  </script>
+</body>
+</html>

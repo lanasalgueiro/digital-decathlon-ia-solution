@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teste kit fitness</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.45;
+      color: #1a1a1a;
+      background: #f4f4f5;
+    }
+    body { max-width: 720px; margin: 0 auto; padding: 1.25rem; }
+    h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
+    .hint {
+      font-size: 0.85rem;
+      color: #52525b;
+      background: #fff;
+      border: 1px solid #e4e4e7;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .hint code { background: #f4f4f5; padding: 0.1rem 0.35rem; border-radius: 4px; }
+    fieldset {
+      border: 1px solid #e4e4e7;
+      border-radius: 8px;
+      margin: 0 0 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #fff;
+    }
+    legend { font-weight: 600; font-size: 0.9rem; }
+    label { display: block; font-size: 0.8rem; color: #52525b; margin-bottom: 0.25rem; }
+    select {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #d4d4d8;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    button {
+      margin-top: 0.5rem;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #out {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #fff;
+      border: 1px solid #e4e4e7;
+      border-radius: 8px;
+    }
+    #out h2 { font-size: 1rem; margin: 0 0 0.5rem; }
+    #out .key { font-size: 0.75rem; word-break: break-all; color: #71717a; margin-bottom: 1rem; }
+    .principal {
+      border: 2px solid #2563eb;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      background: #eff6ff;
+    }
+    .principal span { font-size: 0.75rem; color: #1d4ed8; font-weight: 700; text-transform: uppercase; }
+    .complementar {
+      border: 1px solid #d4d4d8;
+      border-radius: 8px;
+      padding: 0.75rem;
+      background: #fafafa;
+    }
+    .complementar span.label { font-size: 0.75rem; color: #52525b; font-weight: 700; text-transform: uppercase; }
+    .complementar .cat { font-size: 0.9rem; font-weight: 600; color: #3f3f46; margin: 0.35rem 0 0.5rem; }
+    ul { margin: 0; padding-left: 1.1rem; }
+    li { margin: 0.35rem 0; }
+    .meta { font-size: 0.8rem; color: #71717a; }
+    .principal .kit-thumb { margin: 0.5rem 0; }
+    .principal .kit-thumb img {
+      display: block;
+      max-width: 140px;
+      max-height: 140px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid #d4d4d8;
+      background: #fafafa;
+    }
+    li .kit-li-thumb img {
+      vertical-align: middle;
+      margin-right: 0.5rem;
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid #e4e4e7;
+    }
+    .err { color: #b91c1c; font-size: 0.9rem; }
+    .file-row { margin-top: 0.75rem; font-size: 0.85rem; }
+    .file-row input { margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+  <h1>Teste de kit (fitness)</h1>
+  <p class="hint">
+    Exibição: <strong>1 principal</strong> e até <strong>6 complementares</strong>, todos com <strong>score ≥ 0</strong> (categorias distintas nos complementares).<br /><br />
+    Abra esta página via servidor local (o navegador bloqueia <code>fetch</code> em <code>file://</code>):<br />
+    <code>cd starter-pack</code> → <code>python -m http.server 8080</code> →
+    <a href="http://localhost:8080/kit-test.html">http://localhost:8080/kit-test.html</a><br /><br />
+    Se preferir, use os campos abaixo para carregar os JSON manualmente.
+  </p>
+
+  <div class="file-row">
+    <label>Perguntas (opcional): <input type="file" id="fileQuestions" accept=".json,application/json" /></label>
+  </div>
+  <div class="file-row">
+    <label>Candidatos de kit (opcional): <input type="file" id="fileKits" accept=".json,application/json" /></label>
+  </div>
+
+  <form id="form"></form>
+  <button type="button" id="btn" disabled>Montar kit</button>
+  <div id="status"></div>
+  <div id="out" hidden></div>
+
+  <script>
+    function norm(s) {
+      return String(s || "").replace(/\s+/g, " ").trim().toLowerCase();
+    }
+
+    function sortQuestions(raw) {
+      return [...raw].sort((a, b) => {
+        const oa = a.order != null && a.order !== "" ? parseInt(String(a.order), 10) : 1e9;
+        const ob = b.order != null && b.order !== "" ? parseInt(String(b.order), 10) : 1e9;
+        const na = Number.isFinite(oa) ? oa : 1e9;
+        const nb = Number.isFinite(ob) ? ob : 1e9;
+        if (na !== nb) return na - nb;
+        return String(a.question_text || "").localeCompare(String(b.question_text || ""));
+      });
+    }
+
+    function parseOptions(optionsJson) {
+      const arr = JSON.parse(optionsJson);
+      return arr.map((o) => {
+        if (typeof o === "string") {
+          const label = o.trim();
+          return { label, context_key: "" };
+        }
+        if (o && typeof o === "object" && o.label != null) {
+          return {
+            label: String(o.label).trim(),
+            context_key: o.context_key != null ? String(o.context_key).trim() : "",
+          };
+        }
+        return { label: String(o).trim(), context_key: "" };
+      });
+    }
+
+    function mapSpace(v) {
+      v = norm(v);
+      if (v.includes("pouco")) return "small";
+      if (v.includes("moderado")) return "medium";
+      if (v.includes("bastante")) return "large";
+      return "unknown";
+    }
+    function mapFreq(v) {
+      v = norm(v);
+      if (v.startsWith("1")) return "1_2";
+      if (v.startsWith("3")) return "3_4";
+      if (v.includes("5")) return "5_plus";
+      return "unknown";
+    }
+    function mapGoal(v) {
+      v = norm(v);
+      if (v.includes("massa")) return "hypertrophy";
+      if (v.includes("emagrecer") || v.includes("condicionamento")) return "weight_loss";
+      if (v.includes("bem-estar") || v.includes("saúde")) return "wellness";
+      if (v.includes("mobilidade") || v.includes("along")) return "mobility";
+      if (v.includes("performance") || v.includes("intenso")) return "performance";
+      return "unknown";
+    }
+    function mapTraining(v) {
+      v = norm(v);
+      if (v.includes("muscula")) return "strength";
+      if (v.includes("hiit") || v.includes("funcional")) return "hiit";
+      if (v.includes("cardio")) return "cardio";
+      if (v.includes("yoga") || v.includes("along")) return "yoga";
+      if (v.includes("tudo")) return "mixed";
+      return "unknown";
+    }
+    function mapBudget(v) {
+      v = norm(v);
+      if (v.includes("essencial") || v.includes("sem gastar")) return "budget";
+      if (v.includes("equilíbrio") || v.includes("equilibrio")) return "balanced";
+      if (v.includes("investir") || v.includes("melhores")) return "premium";
+      return "unknown";
+    }
+    function contextKeyFromAnswers(byQ) {
+      const space = mapSpace(byQ["Quanto espaço você tem disponível para treinar?"] || "");
+      const freq = mapFreq(byQ["Com que frequência você pretende treinar?"] || "");
+      const goal = mapGoal(byQ["Qual seu principal objetivo?"] || "");
+      const training = mapTraining(byQ["Qual tipo de treino você pretende fazer com mais frequência?"] || "");
+      const budget = mapBudget(byQ["Quanto você quer investir para esta aventura?"] || "");
+      return [
+        "sport=fitness",
+        `training=${training}`,
+        `goal=${goal}`,
+        `space=${space}`,
+        `freq=${freq}`,
+        `budget=${budget}`,
+      ].join("|");
+    }
+
+    function formatPrice(item) {
+      if (!item || item.price == null || item.price === "") return "—";
+      const n = typeof item.price === "number" ? item.price : parseFloat(String(item.price).replace(",", "."));
+      if (!Number.isFinite(n)) return "—";
+      return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function decathlonSearchUrl(productId, name) {
+      const q = encodeURIComponent(String(productId || name || ""));
+      return `https://www.decathlon.com.br/search?Ntt=${q}`;
+    }
+
+    function kitImageUrl(item) {
+      if (!item) return "";
+      const u = item.imageUrl != null && item.imageUrl !== "" ? item.imageUrl : item.image_url;
+      return String(u == null ? "" : u).trim();
+    }
+
+    /** Mesma normalização do gerador: path único por item. */
+    function categoryKey(path) {
+      const c = String(path || "").replace(/\s+/g, " ").trim().toLowerCase();
+      return c || "__sem_categoria__";
+    }
+
+    const KIT_MIN_SCORE = 0;
+    const KIT_ADDON_MAX = 6;
+
+    function scoreOk(item) {
+      return item && typeof item.score === "number" && item.score >= KIT_MIN_SCORE;
+    }
+
+    /** Complementares: score ≥ mínimo, sem repetir categoria, no máximo 6. */
+    function addonsDistinctCategories(addons, mainCategory) {
+      const used = new Set();
+      const mk = categoryKey(mainCategory);
+      if (mk) used.add(mk);
+      const out = [];
+      for (const a of addons || []) {
+        if (!scoreOk(a)) continue;
+        const k = categoryKey(a.category);
+        if (used.has(k)) continue;
+        used.add(k);
+        out.push(a);
+        if (out.length >= KIT_ADDON_MAX) break;
+      }
+      return out;
+    }
+
+    let questions = [];
+    let kitIndex = new Map();
+
+    function buildForm() {
+      const form = document.getElementById("form");
+      form.innerHTML = "";
+      for (const q of questions) {
+        const opts = parseOptions(q.options_json);
+        const fs = document.createElement("fieldset");
+        const leg = document.createElement("legend");
+        leg.textContent = q.question_text;
+        fs.appendChild(leg);
+        const lab = document.createElement("label");
+        lab.htmlFor = `q_${q.id || q.question_text}`;
+        lab.textContent = "Resposta";
+        const sel = document.createElement("select");
+        sel.id = `q_${q.id || q.question_text}`;
+        sel.name = q.question_text;
+        sel.dataset.question = q.question_text;
+        for (const o of opts) {
+          const op = document.createElement("option");
+          op.value = o.label;
+          op.textContent = o.label;
+          if (o.context_key) op.dataset.contextKey = o.context_key;
+          sel.appendChild(op);
+        }
+        fs.appendChild(lab);
+        fs.appendChild(sel);
+        form.appendChild(fs);
+      }
+    }
+
+    function collectAnswers() {
+      const byQ = {};
+      document.querySelectorAll("#form select").forEach((sel) => {
+        byQ[sel.dataset.question] = sel.value;
+      });
+      return byQ;
+    }
+
+    function renderKit(ctxEntry) {
+      const out = document.getElementById("out");
+      if (!ctxEntry) {
+        out.hidden = false;
+        out.innerHTML =
+          '<p class="err">Nenhum contexto encontrado para essa combinação (chave não bate com <code>candidates/fitness_kit_candidates.json</code>).</p>';
+        return;
+      }
+      const main = (ctxEntry.main_candidates || []).find(scoreOk) || null;
+      const addons = addonsDistinctCategories(
+        ctxEntry.addon_candidates || [],
+        main ? main.category : ""
+      );
+      const key = ctxEntry.context_key || "";
+      let html = `<h2>Resultado</h2><div class="key"><strong>context_key:</strong> ${escapeHtml(key)}</div>`;
+      if (main) {
+        const mainImg = kitImageUrl(main);
+        const mainThumb = mainImg
+          ? `<div class="kit-thumb"><img src="${escapeHtml(mainImg)}" alt="" loading="lazy" /></div>`
+          : "";
+        html += `<div class="principal">${mainThumb}<span>Principal</span><br /><strong>${escapeHtml(main.name)}</strong><div class="meta">VTEX productId: ${escapeHtml(String(main.productId))} · ${escapeHtml(main.category || "")} · ${escapeHtml(main.brand || "")}</div><div class="meta">preço: ${formatPrice(main)} · tags: ${escapeHtml((main.tags || []).join(", "))} · score: ${escapeHtml(String(main.score))} (mín. ≥ ${KIT_MIN_SCORE})</div><p><a href="${decathlonSearchUrl(main.productId, main.name)}" target="_blank" rel="noopener">Buscar na Decathlon</a></p></div>`;
+      } else {
+        html += `<p class="err">Sem candidato principal com score ≥ ${KIT_MIN_SCORE} para este contexto.</p>`;
+      }
+      if (addons.length) {
+        html +=
+          `<h2>Complementares</h2><p class="meta">Até <strong>${KIT_ADDON_MAX}</strong> itens com score ≥ ${KIT_MIN_SCORE}; cada um em uma <strong>categoria</strong> diferente (path do CSV). A categoria do principal não se repete.</p><ul>`;
+        for (const a of addons) {
+          const au = kitImageUrl(a);
+          const liThumb = au
+            ? `<span class="kit-li-thumb"><img src="${escapeHtml(au)}" alt="" loading="lazy" /></span>`
+            : "";
+          html += `<li>${liThumb}<span class="meta">${escapeHtml(a.category || "—")}</span><br /><strong>${escapeHtml(a.name)}</strong> <span class="meta">(${escapeHtml(String(a.productId))}, ${formatPrice(a)}, score ${escapeHtml(String(a.score))})</span> — <a href="${decathlonSearchUrl(a.productId, a.name)}" target="_blank" rel="noopener">buscar</a></li>`;
+        }
+        html += "</ul>";
+      }
+      out.innerHTML = html;
+      out.hidden = false;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function loadJson(path) {
+      const r = await fetch(path, { cache: "no-store" });
+      if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
+      return r.json();
+    }
+
+    function indexKits(data) {
+      kitIndex = new Map();
+      for (const c of data.contexts || []) {
+        if (c.context_key) kitIndex.set(c.context_key, c);
+      }
+    }
+
+    async function tryFetch() {
+      const status = document.getElementById("status");
+      const btn = document.getElementById("btn");
+      status.textContent = "Carregando JSON…";
+      try {
+        const [qRaw, kRaw] = await Promise.all([
+          loadJson("questions_fitness.json"),
+          loadJson("candidates/fitness_kit_candidates.json"),
+        ]);
+        questions = sortQuestions(qRaw);
+        indexKits(kRaw);
+        buildForm();
+        btn.disabled = false;
+        status.textContent = "Pronto. Ajuste as respostas e clique em Montar kit.";
+      } catch (e) {
+        status.innerHTML =
+          '<span class="err">Não foi possível carregar via rede.</span> Use os campos de arquivo acima ou um servidor local (veja o aviso no topo).';
+        btn.disabled = true;
+      }
+    }
+
+    document.getElementById("fileQuestions").addEventListener("change", async (ev) => {
+      const f = ev.target.files[0];
+      if (!f) return;
+      const raw = JSON.parse(await f.text());
+      questions = sortQuestions(raw);
+      buildForm();
+      document.getElementById("btn").disabled = kitIndex.size === 0;
+      document.getElementById("status").textContent =
+        kitIndex.size ? "Perguntas carregadas." : "Carregue também o JSON de candidatos de kit.";
+    });
+
+    document.getElementById("fileKits").addEventListener("change", async (ev) => {
+      const f = ev.target.files[0];
+      if (!f) return;
+      const data = JSON.parse(await f.text());
+      indexKits(data);
+      document.getElementById("btn").disabled = questions.length === 0;
+      document.getElementById("status").textContent =
+        questions.length ? "Candidatos carregados. Clique em Montar kit." : "Carregue também questions_fitness.json.";
+    });
+
+    document.getElementById("btn").addEventListener("click", () => {
+      const byQ = collectAnswers();
+      const key = contextKeyFromAnswers(byQ);
+      const entry = kitIndex.get(key);
+      renderKit(entry);
+    });
+
+    tryFetch();
+  </script>
+</body>
+</html>

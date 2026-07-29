@@ -1,0 +1,19 @@
+{
+  "name": "syncprod",
+  "version": "1.0.0",
+  "description": "CLI local para sincronizar catálogo VTEX de Prod para QA (decathlonstore → decathlonproqa)",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "export": "node src/index.js export",
+    "import": "node src/index.js import",
+    "sync": "node src/index.js sync",
+    "stock": "node src/index.js stock"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}

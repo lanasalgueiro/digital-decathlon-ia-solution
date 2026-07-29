@@ -57,7 +57,7 @@ export function IncidentesPage() {
           documentação).
         </p>
         <Link to="/incidentes/dashboard" className="incident-dash-cta">
-          Ver dashboard de cobertura →
+          Ver proposta de OKR / dashboard →
         </Link>
       </header>
 

@@ -306,3 +306,53 @@ export function averageMonthlyMonitoredPercent(
   const total = groups.reduce((sum, g) => sum + g.monitoredPercent, 0)
   return total / groups.length
 }
+
+/** Média de incidentes por mês com registro. */
+export function averageIncidentsPerMonth(items: Incident[]): number {
+  const groups = groupIncidentsByMonth(items)
+  if (groups.length === 0) return 0
+  return items.length / groups.length
+}
+
+export function countDeployOrigin(items: Incident[]): number {
+  return items.filter((i) => i.origin === 'deploy' || Boolean(i.postMortem))
+    .length
+}
+
+/** Parse "DD/MM/YYYY" ou "DD/MM/YYYY HH:mm" → Date local. */
+export function parseIncidentDateTime(value: string): Date | null {
+  const match = value
+    .trim()
+    .match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/)
+  if (!match) return null
+  const [, d, m, y, hh = '0', mm = '0'] = match
+  return new Date(
+    Number(y),
+    Number(m) - 1,
+    Number(d),
+    Number(hh),
+    Number(mm),
+  )
+}
+
+/** MTTR médio em horas (só incidentes com startedAt + resolvedAt). */
+export function averageMttrHours(items: Incident[]): number | null {
+  const durations: number[] = []
+  for (const item of items) {
+    const pm = item.postMortem
+    if (!pm?.startedAt || !pm.resolvedAt) continue
+    const start = parseIncidentDateTime(pm.startedAt)
+    const end = parseIncidentDateTime(pm.resolvedAt)
+    if (!start || !end) continue
+    const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+    if (hours >= 0) durations.push(hours)
+  }
+  if (durations.length === 0) return null
+  return durations.reduce((a, b) => a + b, 0) / durations.length
+}
+
+export function formatDurationHours(hours: number): string {
+  if (hours < 24) return `${hours.toFixed(1)}h`
+  const days = hours / 24
+  return `${days.toFixed(1)} dias`
+}

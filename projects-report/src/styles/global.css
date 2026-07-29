@@ -386,6 +386,277 @@ a {
   border-bottom-color: var(--brand);
 }
 
+.okr-dashboard {
+  display: grid;
+  gap: 1.15rem;
+  padding-bottom: 3rem;
+}
+
+.okr-dashboard .section-hero {
+  margin-bottom: 0.25rem;
+}
+
+.okr-section {
+  padding: 1.15rem 1.25rem 1.25rem;
+}
+
+.okr-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 0.55rem;
+}
+
+.okr-section-lead {
+  margin: 0 0 1rem;
+  color: var(--ink-soft);
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.okr-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.okr-problem {
+  border-left: 4px solid var(--warn);
+}
+
+.okr-quote {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(183, 121, 31, 0.08);
+  border-radius: 8px;
+  font-size: 1.02rem;
+  font-style: italic;
+  color: var(--ink);
+}
+
+.okr-bullets {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.4rem;
+  line-height: 1.45;
+  font-size: 0.94rem;
+}
+
+.okr-note {
+  margin: 0.9rem 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.okr-objective {
+  border-left: 4px solid var(--brand);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 130, 195, 0.06),
+    var(--surface) 55%
+  );
+}
+
+.okr-objective h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-bottom: 0.65rem;
+}
+
+.okr-objective p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.okr-kr-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.okr-kr-card {
+  padding: 1.1rem 1.15rem 1.2rem;
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.okr-kr-card.is-critical {
+  border-color: rgba(179, 58, 43, 0.28);
+  box-shadow: 0 8px 24px rgba(179, 58, 43, 0.08);
+}
+
+.okr-kr-card h3 {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+.okr-targets-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.okr-target-chip {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.okr-target-chip span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}
+
+.okr-target-chip strong {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  color: var(--brand-dark);
+}
+
+.okr-target-chip.is-active {
+  border-color: rgba(0, 130, 195, 0.35);
+  background: rgba(0, 130, 195, 0.08);
+}
+
+.okr-baseline {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.okr-baseline-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.okr-baseline strong {
+  font-family: var(--display);
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+  color: var(--brand-dark);
+  line-height: 1.1;
+}
+
+.okr-baseline-hint {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.okr-why {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+
+.okr-progress {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.okr-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--ink-soft);
+}
+
+.okr-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #e8edf2;
+  overflow: hidden;
+}
+
+.okr-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--warn), #d97706);
+}
+
+.okr-progress.is-ok .okr-progress-track > span {
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+}
+
+.okr-progress.is-disabled .okr-progress-track > span {
+  width: 0 !important;
+  background: #c5ced8;
+}
+
+.month-volume-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.month-volume-list > li {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.month-volume-fill {
+  display: block;
+  height: 100%;
+  min-height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand-dark), var(--brand));
+}
+
+.okr-secondary {
+  opacity: 0.95;
+}
+
+.okr-summary {
+  border-left: 4px solid var(--ok);
+}
+
+.okr-summary-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.55rem;
+  line-height: 1.45;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 960px) {
+  .okr-kr-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .month-volume-list > li {
+    grid-template-columns: 1fr auto;
+  }
+
+  .month-volume-list .month-coverage-track {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+
 .incident-tabs {
   display: inline-flex;
   flex-wrap: wrap;

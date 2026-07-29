@@ -12,6 +12,7 @@ import { HomePage } from '../pages/HomePage'
 import { PortfolioPage } from '../pages/PortfolioPage'
 import { DesempenhoPage } from '../pages/DesempenhoPage'
 import { IncidentesPage } from '../pages/IncidentesPage'
+import { IncidentesDashboardPage } from '../pages/IncidentesDashboardPage'
 import { UptimePage } from '../pages/UptimePage'
 import { ProjectAtuacaoPage } from '../pages/ProjectAtuacaoPage'
 import { ProjectLayout } from '../pages/project/ProjectLayout'
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
           { path: '/projetos', element: <PortfolioPage /> },
           { path: '/desempenho', element: <DesempenhoPage /> },
           { path: '/incidentes', element: <IncidentesPage /> },
+          { path: '/incidentes/dashboard', element: <IncidentesDashboardPage /> },
           { path: '/uptime', element: <UptimePage /> },
         ],
       },

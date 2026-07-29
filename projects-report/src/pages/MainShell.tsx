@@ -18,8 +18,8 @@ export function MainShell() {
             <NavLink
               key={item.id}
               to={item.path}
-              className={({ isActive }) =>
-                `top-nav-link${isActive ? ' active' : ''}`
+              className={() =>
+                `top-nav-link${isNavActive(item.path, location.pathname) ? ' active' : ''}`
               }
             >
               <span aria-hidden>{item.icon}</span>
@@ -34,4 +34,8 @@ export function MainShell() {
       </div>
     </div>
   )
+}
+
+function isNavActive(path: string, pathname: string) {
+  return pathname === path || pathname.startsWith(`${path}/`)
 }

@@ -18,9 +18,9 @@ export const mainNavItems = [
   {
     id: 'incidentes',
     path: '/incidentes',
-    title: 'Incidentes críticos',
+    title: 'Incidentes',
     description:
-      'Post-mortems, causa raiz e ações corretivas dos incidentes críticos.',
+      'Timeline dos incidentes críticos, post-mortems e cobertura de monitoramento.',
     icon: '⚠',
   },
   {

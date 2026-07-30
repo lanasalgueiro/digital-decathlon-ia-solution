@@ -267,7 +267,34 @@ export function sortKey(date: string): number {
   return year * 10000 + month * 100 + day
 }
 
-/** Agrupa por mês (mais recente primeiro) e calcula % monitorados. */
+/**
+ * Cobertura do mês: média de monitorado / alertado / documentado.
+ * Sem incidentes → 100%.
+ */
+export function monthCoveragePercent(items: Incident[]): {
+  monitoredCount: number
+  monitoredPercent: number
+  coveragePercent: number
+} {
+  if (items.length === 0) {
+    return { monitoredCount: 0, monitoredPercent: 100, coveragePercent: 100 }
+  }
+
+  const monitoredCount = items.filter((i) => i.monitored).length
+  const alertedCount = items.filter((i) => i.alerted).length
+  const documentedCount = items.filter((i) => i.documented).length
+  const n = items.length
+
+  const monitoredPercent = (monitoredCount / n) * 100
+  const alertedPercent = (alertedCount / n) * 100
+  const documentedPercent = (documentedCount / n) * 100
+  const coveragePercent =
+    (monitoredPercent + alertedPercent + documentedPercent) / 3
+
+  return { monitoredCount, monitoredPercent, coveragePercent }
+}
+
+/** Agrupa por mês (mais recente primeiro). Só meses com incidente. */
 export function groupIncidentsByMonth(items: Incident[]): MonthGroup[] {
   const map = new Map<string, Incident[]>()
 
@@ -286,19 +313,76 @@ export function groupIncidentsByMonth(items: Incident[]): MonthGroup[] {
       const sorted = [...groupItems].sort(
         (a, b) => sortKey(b.date) - sortKey(a.date),
       )
-      const monitoredCount = sorted.filter((i) => i.monitored).length
+      const cov = monthCoveragePercent(sorted)
       return {
         key,
         label: `${MONTH_NAMES[month - 1]} ${year}`,
         year,
         month,
         items: sorted,
-        monitoredCount,
-        monitoredPercent: (monitoredCount / sorted.length) * 100,
+        monitoredCount: cov.monitoredCount,
+        monitoredPercent: cov.coveragePercent,
       }
     })
 }
 
+/**
+ * Cobertura mensal: preenche meses sem incidente no intervalo como 100%.
+ * Intervalo = do primeiro mês com dado até o mês atual (ou o último com dado).
+ * Total = média aritmética simples desses % mensais.
+ */
+export function groupCoverageByMonth(items: Incident[]): MonthGroup[] {
+  const withData = groupIncidentsByMonth(items)
+  if (withData.length === 0) return []
+
+  const oldest = withData[withData.length - 1]
+  const newest = withData[0]
+
+  const now = new Date()
+  let endYear = newest.year
+  let endMonth = newest.month
+  const nowYear = now.getFullYear()
+  const nowMonth = now.getMonth() + 1
+  if (
+    nowYear > endYear ||
+    (nowYear === endYear && nowMonth > endMonth)
+  ) {
+    endYear = nowYear
+    endMonth = nowMonth
+  }
+
+  const byKey = new Map(withData.map((g) => [g.key, g]))
+  const filled: MonthGroup[] = []
+
+  let y = oldest.year
+  let m = oldest.month
+  while (y < endYear || (y === endYear && m <= endMonth)) {
+    const key = `${y}-${String(m).padStart(2, '0')}`
+    const existing = byKey.get(key)
+    if (existing) {
+      filled.push(existing)
+    } else {
+      filled.push({
+        key,
+        label: `${MONTH_NAMES[m - 1]} ${y}`,
+        year: y,
+        month: m,
+        items: [],
+        monitoredCount: 0,
+        monitoredPercent: 100,
+      })
+    }
+    m += 1
+    if (m > 12) {
+      m = 1
+      y += 1
+    }
+  }
+
+  return filled.sort((a, b) => (a.key < b.key ? 1 : -1))
+}
+
+/** Média aritmética dos percentuais mensais (o que aparece na lista). */
 export function averageMonthlyMonitoredPercent(
   groups: MonthGroup[],
 ): number {

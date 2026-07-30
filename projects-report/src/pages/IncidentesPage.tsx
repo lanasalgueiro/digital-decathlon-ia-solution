@@ -8,15 +8,32 @@ import {
 } from '../data/incidents'
 import { loadIncidents, saveIncidents } from '../lib/incidentStorage'
 
+type OriginFilter = 'all' | 'deploy' | 'externa'
+
+function isDeployOrigin(item: Incident) {
+  return item.origin === 'deploy' || Boolean(item.postMortem)
+}
+
 export function IncidentesPage() {
   const [items, setItems] = useState<Incident[]>(() => loadIncidents())
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Incident | null>(null)
+  const [originFilter, setOriginFilter] = useState<OriginFilter>('all')
   const [expandedId, setExpandedId] = useState<string | null>(
     () => loadIncidents().find((i) => i.postMortem)?.id ?? null,
   )
 
-  const months = groupIncidentsByMonth(items)
+  const deployCount = items.filter(isDeployOrigin).length
+  const externaCount = items.length - deployCount
+
+  const visibleItems =
+    originFilter === 'deploy'
+      ? items.filter(isDeployOrigin)
+      : originFilter === 'externa'
+        ? items.filter((i) => !isDeployOrigin(i))
+        : items
+
+  const months = groupIncidentsByMonth(visibleItems)
   const flatItems = months.flatMap((m) => m.items)
 
   function openCreate() {
@@ -57,9 +74,58 @@ export function IncidentesPage() {
           documentação).
         </p>
         <Link to="/incidentes/dashboard" className="incident-dash-cta">
-          Ver proposta de OKR / dashboard →
+          Ver dashboard de cobertura →
         </Link>
       </header>
+
+      <div className="incident-filters" role="group" aria-label="Filtros">
+        <button
+          type="button"
+          className={`incident-filter-chip${originFilter === 'deploy' ? ' is-active' : ''}`}
+          aria-pressed={originFilter === 'deploy'}
+          onClick={() =>
+            setOriginFilter((v) => (v === 'deploy' ? 'all' : 'deploy'))
+          }
+        >
+          Origem: deploy
+          <span className="incident-filter-count">{deployCount}</span>
+        </button>
+        <button
+          type="button"
+          className={`incident-filter-chip is-externa${originFilter === 'externa' ? ' is-active' : ''}`}
+          aria-pressed={originFilter === 'externa'}
+          onClick={() =>
+            setOriginFilter((v) => (v === 'externa' ? 'all' : 'externa'))
+          }
+        >
+          Origem: externa
+          <span className="incident-filter-count">{externaCount}</span>
+        </button>
+        {originFilter !== 'all' ? (
+          <button
+            type="button"
+            className="incident-filter-clear"
+            onClick={() => setOriginFilter('all')}
+          >
+            Limpar filtro
+          </button>
+        ) : null}
+        <span className="incident-filter-meta">
+          {flatItems.length} de {items.length}
+        </span>
+      </div>
+
+      {flatItems.length === 0 ? (
+        <div className="panel section-placeholder-panel">
+          <p style={{ margin: 0, color: 'var(--ink-soft)' }}>
+            {originFilter === 'deploy'
+              ? 'Nenhum incidente com origem deploy neste filtro.'
+              : originFilter === 'externa'
+                ? 'Nenhum incidente com origem externa neste filtro.'
+                : 'Nenhum incidente encontrado.'}
+          </p>
+        </div>
+      ) : null}
 
       <ol className="incident-timeline">
         {flatItems.map((item, index) => {

@@ -145,17 +145,6 @@ export const seedIncidents: Incident[] = [
     },
   },
   {
-    id: 'gi-2026-04-28',
-    title:
-      'Valor à vista (1x) exibido igual ao valor parcelado na modal de adicionar ao carrinho',
-    date: '28/04/2026',
-    severity: 'crítica',
-    origin: 'deploy',
-    monitored: true,
-    alerted: true,
-    documented: true,
-  },
-  {
     id: 'checkout-vtex-config-conflict-2026-03',
     title: 'Conflito de Configuração e Falha de Desativação (Checkout)',
     date: '23/04/2026',

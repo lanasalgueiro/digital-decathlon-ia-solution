@@ -3,38 +3,56 @@ import { Link } from 'react-router-dom'
 import { NewIncidentModal } from '../components/NewIncidentModal'
 import {
   groupIncidentsByMonth,
+  isDeployOrigin,
+  isKnowIssue,
+  yearOf,
   type Incident,
   type PostMortem,
 } from '../data/incidents'
 import { loadIncidents, saveIncidents } from '../lib/incidentStorage'
 
-type OriginFilter = 'all' | 'deploy' | 'externa'
-
-function isDeployOrigin(item: Incident) {
-  return item.origin === 'deploy' || Boolean(item.postMortem)
-}
+type OriginFilter = 'all' | 'deploy' | 'externa' | 'know-issues'
+type YearFilter = 'all' | number
 
 export function IncidentesPage() {
   const [items, setItems] = useState<Incident[]>(() => loadIncidents())
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Incident | null>(null)
   const [originFilter, setOriginFilter] = useState<OriginFilter>('all')
+  const [yearFilter, setYearFilter] = useState<YearFilter>(
+    () => new Date().getFullYear(),
+  )
   const [expandedId, setExpandedId] = useState<string | null>(
     () => loadIncidents().find((i) => i.postMortem)?.id ?? null,
   )
 
-  const deployCount = items.filter(isDeployOrigin).length
-  const externaCount = items.length - deployCount
+  const availableYears = Array.from(new Set(items.map(yearOf))).sort(
+    (a, b) => b - a,
+  )
+
+  const yearScoped =
+    yearFilter === 'all'
+      ? items
+      : items.filter((i) => yearOf(i) === yearFilter)
+
+  const knowIssuesCount = yearScoped.filter(isKnowIssue).length
+  const deployCount = yearScoped.filter(isDeployOrigin).length
+  const externaCount = yearScoped.filter(
+    (i) => !isDeployOrigin(i) && !isKnowIssue(i),
+  ).length
 
   const visibleItems =
     originFilter === 'deploy'
-      ? items.filter(isDeployOrigin)
+      ? yearScoped.filter(isDeployOrigin)
       : originFilter === 'externa'
-        ? items.filter((i) => !isDeployOrigin(i))
-        : items
+        ? yearScoped.filter((i) => !isDeployOrigin(i) && !isKnowIssue(i))
+        : originFilter === 'know-issues'
+          ? yearScoped.filter(isKnowIssue)
+          : yearScoped
 
   const months = groupIncidentsByMonth(visibleItems)
   const flatItems = months.flatMap((m) => m.items)
+  const hasActiveFilter = originFilter !== 'all' || yearFilter !== 'all'
 
   function openCreate() {
     setEditing(null)
@@ -71,7 +89,8 @@ export function IncidentesPage() {
         <p className="selector-lead">
           Visão única dos incidentes. Em vermelho: casos com post-mortem —
           origem <strong>deploy</strong> (ocasionados pelo time e que exigiram
-          documentação).
+          documentação). <strong>Know-issues</strong>: problema identificado,
+          em espera até haver capacidade.
         </p>
         <Link to="/incidentes/dashboard" className="incident-dash-cta">
           Ver dashboard de cobertura →
@@ -79,39 +98,88 @@ export function IncidentesPage() {
       </header>
 
       <div className="incident-filters" role="group" aria-label="Filtros">
-        <button
-          type="button"
-          className={`incident-filter-chip${originFilter === 'deploy' ? ' is-active' : ''}`}
-          aria-pressed={originFilter === 'deploy'}
-          onClick={() =>
-            setOriginFilter((v) => (v === 'deploy' ? 'all' : 'deploy'))
-          }
-        >
-          Origem: deploy
-          <span className="incident-filter-count">{deployCount}</span>
-        </button>
-        <button
-          type="button"
-          className={`incident-filter-chip is-externa${originFilter === 'externa' ? ' is-active' : ''}`}
-          aria-pressed={originFilter === 'externa'}
-          onClick={() =>
-            setOriginFilter((v) => (v === 'externa' ? 'all' : 'externa'))
-          }
-        >
-          Origem: externa
-          <span className="incident-filter-count">{externaCount}</span>
-        </button>
-        {originFilter !== 'all' ? (
+        <div className="incident-filter-row" role="group" aria-label="Ano">
+          <button
+            type="button"
+            className={`incident-filter-chip is-year${yearFilter === 'all' ? ' is-active' : ''}`}
+            aria-pressed={yearFilter === 'all'}
+            onClick={() => setYearFilter('all')}
+          >
+            Todos os anos
+            <span className="incident-filter-count">{items.length}</span>
+          </button>
+          {availableYears.map((year) => {
+            const count = items.filter((i) => yearOf(i) === year).length
+            return (
+              <button
+                key={year}
+                type="button"
+                className={`incident-filter-chip is-year${yearFilter === year ? ' is-active' : ''}`}
+                aria-pressed={yearFilter === year}
+                onClick={() =>
+                  setYearFilter((v) => (v === year ? 'all' : year))
+                }
+              >
+                {year}
+                <span className="incident-filter-count">{count}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="incident-filter-row" role="group" aria-label="Origem">
+          <button
+            type="button"
+            className={`incident-filter-chip${originFilter === 'deploy' ? ' is-active' : ''}`}
+            aria-pressed={originFilter === 'deploy'}
+            onClick={() =>
+              setOriginFilter((v) => (v === 'deploy' ? 'all' : 'deploy'))
+            }
+          >
+            Origem: deploy
+            <span className="incident-filter-count">{deployCount}</span>
+          </button>
+          <button
+            type="button"
+            className={`incident-filter-chip is-externa${originFilter === 'externa' ? ' is-active' : ''}`}
+            aria-pressed={originFilter === 'externa'}
+            onClick={() =>
+              setOriginFilter((v) => (v === 'externa' ? 'all' : 'externa'))
+            }
+          >
+            Origem: externa
+            <span className="incident-filter-count">{externaCount}</span>
+          </button>
+          <button
+            type="button"
+            className={`incident-filter-chip is-know-issues${originFilter === 'know-issues' ? ' is-active' : ''}`}
+            aria-pressed={originFilter === 'know-issues'}
+            onClick={() =>
+              setOriginFilter((v) =>
+                v === 'know-issues' ? 'all' : 'know-issues',
+              )
+            }
+          >
+            Know-issues
+            <span className="incident-filter-count">{knowIssuesCount}</span>
+          </button>
+        </div>
+
+        {hasActiveFilter ? (
           <button
             type="button"
             className="incident-filter-clear"
-            onClick={() => setOriginFilter('all')}
+            onClick={() => {
+              setOriginFilter('all')
+              setYearFilter('all')
+            }}
           >
-            Limpar filtro
+            Limpar filtros
           </button>
         ) : null}
         <span className="incident-filter-meta">
           {flatItems.length} de {items.length}
+          {yearFilter !== 'all' ? ` · ${yearFilter}` : ''}
         </span>
       </div>
 
@@ -122,7 +190,11 @@ export function IncidentesPage() {
               ? 'Nenhum incidente com origem deploy neste filtro.'
               : originFilter === 'externa'
                 ? 'Nenhum incidente com origem externa neste filtro.'
-                : 'Nenhum incidente encontrado.'}
+                : originFilter === 'know-issues'
+                  ? 'Nenhum know-issue neste filtro.'
+                  : yearFilter !== 'all'
+                    ? `Nenhum incidente em ${yearFilter}.`
+                    : 'Nenhum incidente encontrado.'}
           </p>
         </div>
       ) : null}
@@ -131,6 +203,7 @@ export function IncidentesPage() {
         {flatItems.map((item, index) => {
           const open = expandedId === item.id
           const hasPm = Boolean(item.postMortem)
+          const know = isKnowIssue(item)
           const month = months.find((m) =>
             m.items.some((i) => i.id === item.id),
           )
@@ -139,11 +212,11 @@ export function IncidentesPage() {
           return (
             <li
               key={item.id}
-              className={`incident-item${hasPm ? ' has-postmortem' : ''}`}
+              className={`incident-item${hasPm ? ' has-postmortem' : ''}${know ? ' has-know-issue' : ''}`}
             >
               <div className="incident-rail" aria-hidden>
                 <span
-                  className={`incident-dot${hasPm ? ' is-postmortem' : item.monitored ? ' is-ok' : ''}`}
+                  className={`incident-dot${hasPm ? ' is-postmortem' : know ? ' is-know-issue' : item.monitored ? ' is-ok' : ''}`}
                 />
                 {index < flatItems.length - 1 ? (
                   <span className="incident-line" />
@@ -162,21 +235,35 @@ export function IncidentesPage() {
                 ) : null}
 
                 <article
-                  className={`incident-card${hasPm ? ' is-postmortem' : ''}`}
+                  className={`incident-card${hasPm ? ' is-postmortem' : ''}${know ? ' is-know-issue' : ''}`}
                 >
                   <header className="incident-card-head">
                     <div className="incident-card-top">
                       <div className="incident-meta">
                         <time className="incident-dates">{item.date}</time>
-                        <span className="incident-badge severity-crítica">
-                          crítica
-                        </span>
+                        {know ? (
+                          <span
+                            className="incident-badge priority-know-issues"
+                            title="Problema identificado; aguarda capacidade para atacar"
+                          >
+                            Know-issues
+                          </span>
+                        ) : (
+                          <span className="incident-badge severity-crítica">
+                            crítica
+                          </span>
+                        )}
                         {item.origin === 'deploy' ? (
                           <span
                             className="incident-badge origin-deploy"
                             title="Incidente ocasionado pelo nosso time; exigiu documentação"
                           >
                             Origem: deploy
+                          </span>
+                        ) : null}
+                        {item.jiraKey ? (
+                          <span className="incident-badge has-pm">
+                            {item.jiraKey}
                           </span>
                         ) : null}
                         {hasPm ? (
@@ -262,6 +349,16 @@ function IncidentDetails({ item }: { item: Incident }) {
           <p>
             <strong>deploy</strong> — incidente ocasionado pelo nosso time e que
             fez necessário documentar (post-mortem).
+          </p>
+        </section>
+      ) : null}
+
+      {isKnowIssue(item) ? (
+        <section className="origin-note">
+          <h3>Know-issues</h3>
+          <p>
+            Problema identificado; fica em espera até haver capacidade para
+            atacar.
           </p>
         </section>
       ) : null}

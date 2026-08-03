@@ -16,15 +16,25 @@ export function loadIncidents(): Incident[] {
 
 function mergeWithSeed(saved: Incident[]): Incident[] {
   const byId = new Map(saved.map((item) => [item.id, item]))
+  const seedIds = new Set(seedIncidents.map((s) => s.id))
   const result: Incident[] = []
 
   for (const seed of seedIncidents) {
     const existing = byId.get(seed.id)
     byId.delete(seed.id)
-    result.push(existing ? { ...seed, ...existing, id: seed.id } : structuredClone(seed))
+    // Retros Jira: seed é a fonte da verdade (lista gerenciada no JSON).
+    if (seed.jiraKey) {
+      result.push(structuredClone(seed))
+      continue
+    }
+    result.push(
+      existing ? { ...seed, ...existing, id: seed.id } : structuredClone(seed),
+    )
   }
 
   for (const extra of byId.values()) {
+    // Descarta retros Jira que saíram da limpeza.
+    if (extra.jiraKey && !seedIds.has(extra.id)) continue
     result.push(extra)
   }
 

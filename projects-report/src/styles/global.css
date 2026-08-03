@@ -445,6 +445,14 @@ a {
   margin-bottom: 1.15rem;
 }
 
+.incident-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+}
+
 .incident-filter-chip {
   display: inline-flex;
   align-items: center;
@@ -483,6 +491,38 @@ a {
 
 .incident-filter-chip.is-externa.is-active .incident-filter-count {
   background: rgba(0, 130, 195, 0.15);
+  color: var(--brand-dark);
+}
+
+.incident-filter-chip.is-know-issues:hover {
+  border-color: rgba(166, 124, 0, 0.45);
+  color: #7a5c00;
+}
+
+.incident-filter-chip.is-know-issues.is-active {
+  border-color: rgba(166, 124, 0, 0.45);
+  background: rgba(166, 124, 0, 0.12);
+  color: #7a5c00;
+}
+
+.incident-filter-chip.is-know-issues.is-active .incident-filter-count {
+  background: rgba(166, 124, 0, 0.2);
+  color: #7a5c00;
+}
+
+.incident-filter-chip.is-year:hover {
+  border-color: rgba(13, 42, 63, 0.35);
+  color: var(--brand-dark);
+}
+
+.incident-filter-chip.is-year.is-active {
+  border-color: rgba(13, 42, 63, 0.4);
+  background: rgba(13, 42, 63, 0.08);
+  color: var(--brand-dark);
+}
+
+.incident-filter-chip.is-year.is-active .incident-filter-count {
+  background: rgba(13, 42, 63, 0.14);
   color: var(--brand-dark);
 }
 
@@ -815,8 +855,166 @@ a {
   font-size: 0.95rem;
 }
 
+.okr-subhead {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.okr-year-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.okr-year-card {
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+  display: grid;
+  gap: 0.65rem;
+}
+
+.okr-year-card.is-ok {
+  border-color: rgba(31, 122, 77, 0.35);
+  background: rgba(31, 122, 77, 0.06);
+}
+
+.okr-year-card.is-bad {
+  border-color: rgba(179, 58, 43, 0.35);
+  background: rgba(179, 58, 43, 0.06);
+}
+
+.okr-year-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 0.75rem;
+}
+
+.okr-year-stats > div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.okr-year-stats span {
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.okr-year-stats strong {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  color: var(--brand-dark);
+}
+
+.okr-month-table-wrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.okr-month-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.okr-month-table th,
+.okr-month-table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+}
+
+.okr-month-table th {
+  background: var(--surface-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.okr-month-table tr.is-ok td:last-child {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.okr-month-table tr.is-bad td:last-child {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.okr-month-table tr.is-bad {
+  background: rgba(179, 58, 43, 0.04);
+}
+
+.okr-year-summary-table td small,
+.okr-year-tag {
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.78rem;
+}
+
+.month-dual-track {
+  display: grid;
+  gap: 3px;
+  background: transparent;
+  height: auto;
+  overflow: visible;
+}
+
+.month-dual-track .month-volume-fill {
+  height: 6px;
+  border-radius: 999px;
+  min-width: 0;
+}
+
+.month-volume-fill.is-ly {
+  background: #b8c2ce;
+}
+
+.month-volume-fill.is-ty {
+  background: linear-gradient(90deg, var(--brand-dark), var(--brand));
+}
+
+.okr-deploy-list {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.okr-deploy-list summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--brand-dark);
+}
+
+.okr-deploy-list ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  color: var(--ink-soft);
+}
+
+.okr-deploy-list time {
+  font-weight: 700;
+  color: var(--ink);
+  margin-right: 0.35rem;
+}
+
 @media (max-width: 960px) {
   .okr-kr-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .okr-year-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1149,6 +1347,30 @@ a {
 .incident-badge.has-pm {
   background: rgba(179, 58, 43, 0.12);
   color: var(--danger);
+}
+
+.incident-badge.origin-externa {
+  background: rgba(0, 130, 195, 0.12);
+  color: var(--brand-dark);
+}
+
+.incident-badge.priority-know-issues {
+  background: rgba(166, 124, 0, 0.14);
+  color: #7a5c00;
+}
+
+.incident-card.is-know-issue {
+  border-color: rgba(166, 124, 0, 0.35);
+  background: linear-gradient(
+    180deg,
+    rgba(166, 124, 0, 0.06) 0%,
+    var(--surface) 48%
+  );
+}
+
+.incident-dot.is-know-issue {
+  background: #c9a227;
+  box-shadow: 0 0 0 4px rgba(166, 124, 0, 0.18);
 }
 
 .incident-card.is-postmortem {

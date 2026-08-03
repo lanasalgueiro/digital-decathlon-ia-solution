@@ -1,5 +1,5 @@
 import {
-  createBrowserRouter,
+  createHashRouter,
   Navigate,
   Outlet,
   useLocation,
@@ -53,7 +53,7 @@ function ProjectGate() {
   return <ProjectLayout />
 }
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     element: <RootLayout />,
     children: [

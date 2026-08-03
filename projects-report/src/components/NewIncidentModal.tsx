@@ -15,6 +15,7 @@ type FormState = {
   alerted: boolean
   documented: boolean
   originDeploy: boolean
+  knowIssues: boolean
   summary: string
   rootCause: string
   resolution: string
@@ -29,6 +30,7 @@ function formFromIncident(incident?: Incident | null): FormState {
       alerted: false,
       documented: false,
       originDeploy: false,
+      knowIssues: false,
       summary: '',
       rootCause: '',
       resolution: '',
@@ -42,6 +44,7 @@ function formFromIncident(incident?: Incident | null): FormState {
     alerted: incident.alerted,
     documented: incident.documented,
     originDeploy: incident.origin === 'deploy' || Boolean(incident.postMortem),
+    knowIssues: incident.priority === 'know-issues',
     summary: incident.postMortem?.summary ?? '',
     rootCause: incident.postMortem?.rootCause ?? '',
     resolution: incident.postMortem?.resolution ?? '',
@@ -86,7 +89,7 @@ export function NewIncidentModal({ open, initial, onClose, onSave }: Props) {
       setError('Informe a data.')
       return
     }
-    if (form.originDeploy && !form.summary.trim()) {
+    if (form.originDeploy && !form.knowIssues && !form.summary.trim()) {
       setError('Com origem deploy, preencha o resumo do post-mortem.')
       return
     }
@@ -99,10 +102,11 @@ export function NewIncidentModal({ open, initial, onClose, onSave }: Props) {
       title,
       date,
       severity: 'crítica',
+      ...(form.knowIssues ? { priority: 'know-issues' as const } : {}),
       monitored: form.monitored,
       alerted: form.alerted,
-      documented: form.documented || form.originDeploy,
-      ...(form.originDeploy
+      documented: form.documented || form.originDeploy || form.knowIssues,
+      ...(form.originDeploy && !form.knowIssues
         ? {
             origin: 'deploy' as const,
             postMortem: {
@@ -118,6 +122,7 @@ export function NewIncidentModal({ open, initial, onClose, onSave }: Props) {
             },
           }
         : {}),
+      ...(prev?.jiraKey ? { jiraKey: prev.jiraKey } : {}),
     }
 
     onSave(incident)
@@ -204,7 +209,14 @@ export function NewIncidentModal({ open, initial, onClose, onSave }: Props) {
             <input
               type="checkbox"
               checked={form.originDeploy}
-              onChange={(e) => update('originDeploy', e.target.checked)}
+              onChange={(e) => {
+                const checked = e.target.checked
+                setForm((prev) => ({
+                  ...prev,
+                  originDeploy: checked,
+                  knowIssues: checked ? false : prev.knowIssues,
+                }))
+              }}
             />
             <span>
               <strong>Origem: deploy</strong>
@@ -214,7 +226,28 @@ export function NewIncidentModal({ open, initial, onClose, onSave }: Props) {
             </span>
           </label>
 
-          {form.originDeploy ? (
+          <label className="check-label incident-modal-origin">
+            <input
+              type="checkbox"
+              checked={form.knowIssues}
+              onChange={(e) => {
+                const checked = e.target.checked
+                setForm((prev) => ({
+                  ...prev,
+                  knowIssues: checked,
+                  originDeploy: checked ? false : prev.originDeploy,
+                }))
+              }}
+            />
+            <span>
+              <strong>Know-issues</strong>
+              <small>
+                Problema identificado; fica em espera até haver capacidade
+              </small>
+            </span>
+          </label>
+
+          {form.originDeploy && !form.knowIssues ? (
             <div className="incident-modal-pm">
               <label>
                 Resumo do post-mortem

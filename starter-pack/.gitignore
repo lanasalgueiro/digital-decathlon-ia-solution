@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+outage_candidates.json
+outage_candidates.csv
+outage_approved.json
+Jira.csv

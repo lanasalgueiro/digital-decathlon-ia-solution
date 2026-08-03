@@ -3,6 +3,12 @@ export type IncidentStatus = 'resolvido' | 'em investigação' | 'mitigado'
 /** Incidente causado pelo time (ex.: deploy) que exigiu documentação / post-mortem. */
 export type IncidentOrigin = 'deploy'
 
+/**
+ * Prioridade operacional.
+ * `know-issues` = problema identificado, em espera até haver capacidade.
+ */
+export type IncidentPriority = 'crítica' | 'know-issues'
+
 export type IncidentTimelineEvent = {
   when: string
   title: string
@@ -28,12 +34,16 @@ export type Incident = {
   /** Data de referência na timeline (DD/MM/YYYY). */
   date: string
   severity: 'crítica'
+  /** Default implícito: crítica. Know-issues fica em backlog consciente. */
+  priority?: IncidentPriority
   monitored: boolean
   alerted: boolean
   documented: boolean
   /** Presente quando o incidente veio do nosso time e precisou ser documentado. */
   origin?: IncidentOrigin
   postMortem?: PostMortem
+  /** Referência Jira (import retroativo). */
+  jiraKey?: string
 }
 
 export type MonthGroup = {
@@ -255,6 +265,275 @@ export const seedIncidents: Incident[] = [
     alerted: false,
     documented: true,
   },
+  // Retroativos Jira 2025 (limpos em deploy_2025_critical_manage.json)
+  {
+    id: 'jira-spdbr-4274',
+    title: '[iOS][Crash] O aplicativo congela durante a navegação',
+    date: '17/12/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-4274',
+  },
+  {
+    id: 'jira-spdbr-4211',
+    title: 'Botão Baixar boleto não está fazendo download do boleto',
+    date: '09/12/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-4211',
+  },
+  {
+    id: 'jira-spdbr-4145',
+    title: 'App trava após fechar modal de login no guest',
+    date: '27/11/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-4145',
+  },
+  {
+    id: 'jira-spdbr-4013',
+    title:
+      '[Cartão presente] APP crasha após preencher dados e tocar em comprar',
+    date: '31/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-4013',
+  },
+  {
+    id: 'jira-spdbr-3981',
+    title: 'Crash ao tentar abrir os detalhes do pedido 3P',
+    date: '29/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3981',
+  },
+  {
+    id: 'jira-spdbr-3972',
+    title: 'Cadastro de usuários parou de funcionar',
+    date: '28/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3972',
+  },
+  {
+    id: 'jira-spdbr-3971',
+    title: 'Não é possível realizar cadastro via guest-chekout',
+    date: '28/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3971',
+  },
+  {
+    id: 'jira-spdbr-3960',
+    title: 'Adiciona produto indisponivel no carrinho',
+    date: '27/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3960',
+  },
+  {
+    id: 'jira-spdbr-3948',
+    title: 'Input de vale presente não apresenta o teclado numerico',
+    date: '27/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3948',
+  },
+  {
+    id: 'jira-spdbr-3713',
+    title: 'Modal de Login não abre no carrinho',
+    date: '08/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3713',
+  },
+  {
+    id: 'jira-spdbr-3663',
+    title:
+      'Modal de conflito de e-mail quebrando o checkout após clicar em "Entrar"',
+    date: '02/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3663',
+  },
+  {
+    id: 'jira-spdbr-3662',
+    title: 'Checkout - Pagamento não está carregando',
+    date: '02/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3662',
+  },
+  {
+    id: 'jira-spdbr-3660',
+    title:
+      '[Msite] Após informar CEP selecionar entrega não carregam as opções de entrega',
+    date: '02/10/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3660',
+  },
+  {
+    id: 'jira-spdbr-3549',
+    title: 'Erro ao fechar pedido 1P + 3P',
+    date: '25/09/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3549',
+  },
+  {
+    id: 'jira-spdbr-3500',
+    title: 'Não é possível selecionar o envio do segundo pacote',
+    date: '16/09/2025',
+    severity: 'crítica',
+    priority: 'know-issues',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    jiraKey: 'SPDBR-3500',
+  },
+  {
+    id: 'jira-spdbr-3462',
+    title: '[Login] Erro ao tentar realizar login',
+    date: '10/09/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3462',
+  },
+  {
+    id: 'jira-spdbr-3435',
+    title: '[iOS] Tela branca após instalação do aplicativo',
+    date: '08/09/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3435',
+  },
+  {
+    id: 'jira-spdbr-3434',
+    title: 'Erro ao tentar adicionar produto ao carrinho',
+    date: '08/09/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3434',
+  },
+  {
+    id: 'jira-spdbr-3421',
+    title: 'Não é possível finalizar compra via Boleto',
+    date: '08/09/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3421',
+  },
+  {
+    id: 'jira-spdbr-3318',
+    title: 'Compre e Retire não funciona',
+    date: '20/08/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3318',
+  },
+  {
+    id: 'jira-spdbr-3305',
+    title: '[Mobile] - Quebra de layout na Home ai acessar o Modal de Cep no header',
+    date: '15/08/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-3305',
+  },
+  {
+    id: 'jira-spdbr-2900',
+    title: 'Tamanhos incorretos ao acessar PDP via produto selecionado na PLP',
+    date: '06/06/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-2900',
+  },
+  {
+    id: 'jira-spdbr-2771',
+    title: '[App] Botão Pagar boleto apresentado em um pedido pago via PIX',
+    date: '16/05/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-2771',
+  },
+  {
+    id: 'jira-spdbr-2605',
+    title:
+      'Android/iOS - Crash ao tentar abrir na home ultima compra realizada com status faturado',
+    date: '09/04/2025',
+    severity: 'crítica',
+    monitored: false,
+    alerted: false,
+    documented: true,
+    origin: 'deploy',
+    jiraKey: 'SPDBR-2605',
+  },
 ]
 
 function parseDate(date: string): { day: number; month: number; year: number } {
@@ -439,4 +718,111 @@ export function formatDurationHours(hours: number): string {
   if (hours < 24) return `${hours.toFixed(1)}h`
   const days = hours / 24
   return `${days.toFixed(1)} dias`
+}
+
+export function isKnowIssue(item: Incident): boolean {
+  return item.priority === 'know-issues'
+}
+
+/** Origem deploy que conta no OKR de volume (exclui know-issues em backlog). */
+export function isDeployOrigin(item: Incident): boolean {
+  if (isKnowIssue(item)) return false
+  return item.origin === 'deploy' || Boolean(item.postMortem)
+}
+
+export function yearOf(item: Incident): number {
+  return parseDate(item.date).year
+}
+
+export type YearConsolidate = {
+  year: number
+  totalCritical: number
+  deployCount: number
+  externaCount: number
+  /**
+   * Média anual oficial do OKR: Total deploy / 12
+   * (mesmo no ano corrente — baseline anual, não YTD).
+   */
+  deployAvgPerMonth: number
+  /** Meses com dado na tabela mês a mês (YTD no ano corrente). */
+  monthsInScope: number
+  byMonth: { month: number; label: string; deploy: number; total: number }[]
+}
+
+/** Consolida um ano civil: jan–dez (ou jan–mês atual se for o ano corrente). */
+export function consolidateYear(
+  items: Incident[],
+  year: number,
+  asOf: Date = new Date(),
+): YearConsolidate {
+  const inYear = items.filter((i) => yearOf(i) === year)
+  const deploy = inYear.filter(isDeployOrigin)
+  const endMonth =
+    year === asOf.getFullYear() ? asOf.getMonth() + 1 : 12
+
+  const byMonth = Array.from({ length: endMonth }, (_, idx) => {
+    const month = idx + 1
+    const monthItems = inYear.filter((i) => parseDate(i.date).month === month)
+    return {
+      month,
+      label: MONTH_NAMES[month - 1],
+      deploy: monthItems.filter(isDeployOrigin).length,
+      total: monthItems.length,
+    }
+  })
+
+  return {
+    year,
+    totalCritical: inYear.length,
+    deployCount: deploy.length,
+    externaCount: inYear.length - deploy.length,
+    deployAvgPerMonth: deploy.length / 12,
+    monthsInScope: endMonth,
+    byMonth,
+  }
+}
+
+export type OkrMonthRow = {
+  month: number
+  label: string
+  lyDeploy: number
+  tyDeploy: number
+  /** Acumulado TY até o mês */
+  tyCumulative: number
+  /** Orçamento acumulado = metaMensal * mês */
+  budgetCumulative: number
+  onTrack: boolean
+}
+
+/**
+ * OKR mês a mês: compara LY vs TY (só deploy) e orçamento da meta mensal.
+ */
+export function buildDeployOkrMonths(
+  items: Incident[],
+  lyYear: number,
+  tyYear: number,
+  monthlyTarget: number,
+  asOf: Date = new Date(),
+): OkrMonthRow[] {
+  const ly = consolidateYear(items, lyYear, new Date(lyYear, 11, 31))
+  const ty = consolidateYear(items, tyYear, asOf)
+  const endMonth = ty.monthsInScope
+
+  let tyCumulative = 0
+  return Array.from({ length: endMonth }, (_, idx) => {
+    const month = idx + 1
+    const lyDeploy = ly.byMonth.find((m) => m.month === month)?.deploy ?? 0
+    const tyDeploy = ty.byMonth.find((m) => m.month === month)?.deploy ?? 0
+    tyCumulative += tyDeploy
+    const budgetCumulative = monthlyTarget * month
+    return {
+      month,
+      label: MONTH_NAMES[month - 1],
+      lyDeploy,
+      tyDeploy,
+      tyCumulative,
+      budgetCumulative,
+      onTrack: tyCumulative <= budgetCumulative,
+    }
+  })
 }
